@@ -30,6 +30,12 @@ async function run() {
     const allService = database.collection("allServices");
     const bookedService = database.collection("bookedServices");
 
+    app.get('/services/all', async (req, res) => {
+      const cursor = allService.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     app.post('/add-service', async (req, res) => {
       const serviceData = req?.body;
       const result = await allService.insertOne(serviceData);
