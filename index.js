@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.jcb8og7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -31,8 +31,22 @@ async function run() {
     const bookedService = database.collection("bookedServices");
 
     app.get('/services/all', async (req, res) => {
-      const cursor = allService.find();
-      const result = await cursor.toArray();
+      const email = req?.query?.email;
+      if (email) {
+        const cursor = allService.find({ 'providerInfo.providerEmail': email });
+        const result = await cursor.toArray();
+        res.send(result);
+      } else {
+        const cursor = allService.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      }
+    });
+
+    app.get('/service/:serviceId', async (req, res) => {
+      const id = req.params?.serviceId;
+      const query = { _id: new ObjectId(id) };
+      const result = await allService.findOne(query);
       res.send(result);
     });
 
