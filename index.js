@@ -24,7 +24,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const database = client.db("eserviceBD");
     const allService = database.collection("allServices");
@@ -52,14 +52,39 @@ async function run() {
 
     app.get('/service/:serviceId', async (req, res) => {
       const id = req.params?.serviceId;
-      const query = { _id: new ObjectId(id) };
+      const query = { sequence_value: parseInt(id) };
       const result = await allService.findOne(query);
       res.send(result);
     });
 
     app.post('/add-service', async (req, res) => {
+
+      const cursor = allService.find();
+      const previousData = await cursor.toArray();
+
+
       const serviceData = req?.body;
+      serviceData.sequence_value = previousData.length + 1;
+
       const result = await allService.insertOne(serviceData);
+      res.send(result);
+    });
+
+    app.put('/update-service/:serviceId', async (req, res) => {
+      const id = req?.params?.serviceId;
+      const serviceData = req?.body;
+      const filter = { sequence_value: parseInt(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          serviceTitle: serviceData?.serviceTitle,
+          price: serviceData?.price,
+          imageURL: serviceData?.imageURL,
+          serviceArea: serviceData?.serviceArea,
+          description: serviceData?.description,
+        },
+      };
+      const result = await allService.updateOne(filter, updateDoc, options);
       res.send(result);
     });
 
@@ -69,9 +94,15 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/booked-service/all', async (req, res) => {
+      const cursor = bookedService.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     app.delete('/service/delete/:serviceId', async (req, res) => {
       const id = req?.params?.serviceId;
-      const query = { _id: new ObjectId(id) };
+      const query = { sequence_value: parseInt(id) };
       const result = await allService.deleteOne(query);
       res.send(result);
     })
