@@ -43,6 +43,13 @@ async function run() {
       }
     });
 
+    app.get('/services/popular', async (req, res) => {
+      const cursor = allService.find();
+      const result = await cursor.toArray();
+      const result1 = result.slice(0, 6);
+      res.send(result1);
+    });
+
     app.get('/service/:serviceId', async (req, res) => {
       const id = req.params?.serviceId;
       const query = { _id: new ObjectId(id) };
@@ -61,6 +68,13 @@ async function run() {
       const result = await bookedService.insertOne(serviceToBook);
       res.send(result);
     });
+
+    app.delete('/service/delete/:serviceId', async (req, res) => {
+      const id = req?.params?.serviceId;
+      const query = { _id: new ObjectId(id) };
+      const result = await allService.deleteOne(query);
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
