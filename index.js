@@ -95,8 +95,29 @@ async function run() {
     });
 
     app.get('/booked-service/all', async (req, res) => {
-      const cursor = bookedService.find();
-      const result = await cursor.toArray();
+      const email = req?.query?.email;
+      if (email) {
+        const cursor = bookedService.find({ 'providerInfo.providerEmail': email });
+        const result = await cursor.toArray();
+        res.send(result);
+      } else {
+        const cursor = bookedService.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      }
+    });
+
+    app.put('/booked-service/:serviceId', async (req, res) => {
+      const id = req?.params?.serviceId;
+      const status = req?.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          status: status.status
+        },
+      };
+      const result = await bookedService.updateOne(filter, updateDoc, options);
       res.send(result);
     });
 
