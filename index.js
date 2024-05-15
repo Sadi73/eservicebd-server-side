@@ -1,11 +1,16 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const app = express();
 const port = 3000;
 
 // middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173'],
+  credentials: true
+}));
 app.use(express.json());
 
 
@@ -126,6 +131,17 @@ async function run() {
       const query = { sequence_value: parseInt(id) };
       const result = await allService.deleteOne(query);
       res.send(result);
+    });
+
+    app.post('/jwt', (req, res) => {
+      const payload = req?.body;
+      const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+      res.cookie('token', token, {
+        httpOnly: true,
+        sameSite: 'none',
+        secure: false
+      })
+        .send({ success: true });
     })
 
     // Send a ping to confirm a successful connection
