@@ -8,7 +8,7 @@ const port = 3000;
 
 // middleware
 app.use(cors({
-  origin: ['http://localhost:5173'],
+  origin: ['http://localhost:5173', 'https://eservicebd-3433d.web.app'],
   credentials: true
 }));
 app.use(express.json());
@@ -101,8 +101,9 @@ async function run() {
 
     app.get('/booked-service/all', async (req, res) => {
       const email = req?.query?.email;
+      const query = { 'customerInfo.customerEmail': email }
       if (email) {
-        const cursor = bookedService.find({ 'providerInfo.providerEmail': email });
+        const cursor = bookedService.find(query);
         const result = await cursor.toArray();
         res.send(result);
       } else {
